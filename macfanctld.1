@@ -1,0 +1,103 @@
+.TH macfanctld 1 "October 20, 2011" "Version 0.6" "USER COMMANDS"
+.SH NAME
+macfanctld \- Fan control for MacBook
+.SH SYNOPSIS
+.B macfanctld
+[\-f]
+.SH DESCRIPTION
+macfanctld is a daemon that reads temperature sensors and adjust the fan(s) speed on MacBook's. macfanctld is configurable and logs temp and fan data to a file. macfanctld uses three sources to determine the fan speeed: 1) average temperature from all sensors, 2) sensor TC0P [CPU 0 Proximity Temp and 3] and sensor TG0P [GPU 0 Proximity Temp]. Each source's impact on fan speed can be individually adjusted to fine tune working temperature on different MacBooks.
+
+Important: macfanctld depends on applesmc-dkms.
+.SH OPTIONS
+.TP
+.B \-f
+runs macfanctld the in foreground, logging to stdout.
+.SH EXIT STATUS
+macfanctld returns non-zero exist status in case of failure to start.
+.SH FILES
+.I /etc/init.d/macfanctld
+.RS
+.P
+Daemon init script.
+
+.RE
+.I /etc/macfanctl.conf
+.RS
+.P
+Configuration file that can be tuned to get desired working temperature. The format must be
+.I <key>:<number>.
+
+.I fan_min:
+Minimum fan speed. Typically, this is set to 2000 (Apples default). Maximum speed is 6200.
+
+.I temp_avg_floor:
+Average temperature in Celsius at which the fan speed will be set to fan_min. Valid values are 0 to 90, and must be less than temp_avg_ceiling.
+
+.I temp_avg_ceiling: 
+Average temperature in Celsius at which the fan speed will be set to max (6200). Valid values are 0 to 90, and must be larger than temp_avg_floor.
+
+.I temp_TC0P_floor:
+Temperature in Celsius at TC0P, at which the fan speed will be set to fan_min. Valid values are 0 to 90, and must be less than temp_TC0P_ceiling.
+
+.I temp_TC0P_ceiling:
+Temperature in Celsius at TC0P, at which the fan speed will be set to max (6200). Valid values are 0 to 90, and must be larger than temp_TC0P_floor.
+
+.I temp_TG0P_floor
+:
+Temperature in Celsius at TG0P, at which the fan speed will be set to fan_min. Valid values are 0 to 90, and must be less than temp_TG0P_ceiling.
+
+.I temp_TG0P_ceiling:
+Temperature in Celsius at TG0P, at which the fan speed will be set to max (6200). Valid values are 0 to 90, and must be larger than temp_TG0P_floor.
+
+.I exclude: 
+A list of natural numbers defining sensors that should be excluded from reading. Example:
+
+exclude: 1 7
+
+will disable reading of sensors temp1_input and temp7_input.
+
+This feature was added as a workaround for issues in applesmc-dkms that disables reading of some sensors, or in some cases, incorrectly defines sensors that don't exists.
+
+.I log_level values:
+Set the log level. Valid values are:
+ 0 - Startup / Exit logging only
+ 1 - Basic temp / fan logging
+ 2 - Log all sensors
+.RE
+
+.I /var/log/macfanctl.log
+.RS
+.P
+Log file. When log_level is 1, the following ouput is generated:
+
+  Speed: 6200,  AVG: 52.5C, *TC0P: 62.0C,  TG0P: 62.0C
+  Speed: 6200,  AVG: 52.4C, *TC0P: 62.0C,  TG0P: 61.8C
+  Speed: 6200,  AVG: 52.4C,  TC0P: 61.8C, *TG0P: 62.0C
+  Speed: 6168,  AVG: 52.3C,  TC0P: 61.8C, *TG0P: 61.8C
+  Speed: 6168,  AVG: 52.2C,  TC0P: 61.5C, *TG0P: 61.8C
+
+Speed is the current fan speed. 
+
+AVG, TC0P and TG0P shows the temperature in Celsius at the source. 
+
+The '*' indicate which source that is currently driving the fan. 
+.RE
+
+.SH NOTES
+Hopefully the provided configuration file will be suitable on most MacBooks. However, there has been very little testing at this point. Therefore, enable logging and keep an eye on the temperatures in the log, as well as sensing the temp with your hand on the left part above the keyboard. If it feels too hot, tweak the config file!
+
+To follow the log as it's written do
+
+$ tail -F /var/log/macfanctl.log
+.SH BUGS
+There are most certainly bugs in this software. 
+
+Please submit bug reports, comments and suggestions to mikael@sesamiq.com.
+
+.SH AUTHOR
+Mikael Strom (mikael@sesamiq.com)
+.SH "SEE ALSO"
+tail (1) 
+
+
+

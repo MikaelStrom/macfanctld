@@ -1,0 +1,79 @@
+macfanctld (0.6~mactel1ubuntu3~precise) precise; urgency=low
+
+  * Updated for Precise.
+
+ -- Mikael Strom <mikael@sesamiq.com>  Sun, 22 Apr 2012 12:12:02 +0800
+
+macfanctld (0.6~mactel1ubuntu2) oneiric; urgency=low
+
+  * Decreased CPU usage by caching sensor file names and replacing 
+    fopen()/fclose() with open()/close().
+
+ -- Mikael Strom <mikael@sesamiq.com>  Sat, 21 Apr 2012 17:16:42 +0800
+
+macfanctld (0.6~mactel1ubuntu1) oneiric; urgency=low
+
+  * updated for Oneiric
+
+ -- Mikael Strom <mikael@sesamiq.com>  Sat, 21 Apr 2012 14:45:41 +0800
+
+macfanctld (0.6~mactel1) natty; urgency=low
+
+  * Use PnP rather than hardcoding resources and devices: 
+    locate applesmc via /sys/class/hwmon and check that device/name 
+    is "applesmc" as suggested by Julien BLACHE. 
+
+ -- Mikael Strom <mikael@sesamiq.com>  Wed, 19 Aug 2011 01:31:36 +0800
+
+macfanctld (0.5~mactel1) natty; urgency=low
+
+  * Corrected comment in macfanctl.conf
+
+ -- Mikael Strom <mikael@sesamiq.com>  Wed, 18 Aug 2011 01:31:36 +0800
+
+macfanctld (0.4~mactel1~karmic) karmic; urgency=low
+
+  * Patched using Henrik Rydbergs "Off by one" patch
+  * Added 'exclude' option to config file. Enables specific sensors to be excluded.
+
+ -- Mikael Strom <mikael@sesamiq.com>  Sat, 06 Nov 2010 17:58:59 +0800
+
+macfanctld (0.3~mactel1~maverick) maverick; urgency=low
+
+  * Fixed empty line bug in log. Produced an empty line ecery 5 seconds.
+
+ -- Mikael Strom <mikael@sesamiq.com>  Thu, 02 Sep 2010 03:22:15 +0800
+
+macfanctld (0.2~mactel1~karmic) karmic; urgency=low
+
+  * Moved to mactel repo.
+
+ -- Mikael Strom <mikael@sesamiq.com>  Wed, 01 Sep 2010 22:24:26 +0800
+
+macfanctld (0.2) lucid; urgency=low
+
+  * Fixed bug where only fan 1 got updated.
+  * Changed to use sensors TC0P/TG0P instead of TC0D/TC0D that was to noisy.
+  * Removed the modes. Now uses TC0P/TG0P and average concurrently.
+  * Replaced README with a new man page, macfanctld.1
+
+ -- Mikael Strom <mikael@sesamiq.com>  Sun, 29 Aug 2010 04:09:51 +0800
+
+macfanctld (0.1) lucid; urgency=low
+
+  * Updated to GPL 3 in source files.
+  * Updated README, and added to the deb-package.
+  * Clean up the code, monir bugfixes.
+  * Added code to handle only 1 fan.
+  * Removed command line switches -a -d and -s. Moved this settings
+    to the config file.
+  * Fixed so that HUP signal re-reads config properly.
+  
+ -- Mikael Strom <mikael@sesamiq.com>  Sat, 28 Aug 2010 00:43:55 +0800
+
+macfanctld (0.0) lucid; urgency=low
+
+  * Initial release
+
+ -- Mikael Strom <mikael@sesamiq.com>  Fri, 27 Aug 2010 00:24:27 +0800
+

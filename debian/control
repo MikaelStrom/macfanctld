@@ -1,0 +1,14 @@
+Source: macfanctld
+Section: misc
+Priority: optional
+Maintainer: Mikael Strom <mikael@sesamiq.com>
+Build-Depends: debhelper (>= 7)
+Standards-Version: 3.8.4
+Homepage: 
+
+Package: macfanctld
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description:  Fan control daemon for MacBook
+ This daemon is a customizable fan control to keep the working temperature 
+ within resonable limits. Se manpage macfanctld(1) for more information.
