@@ -191,13 +191,14 @@ void read_sensors()
 			else
 			{
 				char val_buf[16];
-				int n = read(fd, val_buf, sizeof(val_buf));
+				int n = read(fd, val_buf, sizeof(val_buf) - 1);
 				if(n < 1)
 				{
 					printf("Error: Can't read  %s\n", sensors[i].fname);
 				}
 				else
 				{
+					val_buf[n] = '\0';
 					sensors[i].value = (float)atoi(val_buf) / 1000.0;
 				}
 				close(fd);
