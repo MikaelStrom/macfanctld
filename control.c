@@ -194,7 +194,7 @@ void read_sensors()
 				int n = read(fd, val_buf, sizeof(val_buf));
 				if(n < 1)
 				{
-					printf("Error: Can't read  %s\n", sensors[i].fname);
+					printf("Error: Can't read %s\n", sensors[i].fname);
 				}
 				else
 				{
@@ -460,7 +460,7 @@ void scan_sensors()
 				int n = fread(key_buf, 1, SENSKEY_MAXLEN - 1, fp);
 				if(n < 1)
 				{
-					printf("Error: Can't read  %s\n", fname);
+					printf("Error: Can't read %s\n", fname);
 				}
 				else
 				{
