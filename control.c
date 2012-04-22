@@ -207,19 +207,19 @@ void read_sensors()
 
 	// calc average
 
-	temp_avg = 0.0;
+	float temp_acc = 0.0;
 	int active_sensors = 0;
 
 	for(i = 0; i < sensor_count; ++i)
 	{
 		if(! sensors[i].excluded)
 		{
-			temp_avg += sensors[i].value;
+			temp_acc += sensors[i].value;
 			++active_sensors;
 		}
 	}
 
-	temp_avg = temp_avg / active_sensors;
+	temp_avg = temp_acc / active_sensors;
 }
 
 //------------------------------------------------------------------------------
