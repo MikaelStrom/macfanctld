@@ -1,3 +1,9 @@
+macfanctld (0.6~mactel1ubuntu3~quantal) precise; urgency=low
+
+  * Updated for Quantal.
+
+ -- Mikael Strom <mikael@sesamiq.com>  Sun, 22 Oct 2012 14:54:02 +0800
+
 macfanctld (0.6~mactel1ubuntu3~precise) precise; urgency=low
 
   * Updated for Precise.
