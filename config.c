@@ -154,7 +154,7 @@ void read_exclude_list()
 
 	while(1)
 	{
-		char buf[256];
+		char buf[1024];
 		char *s = fgets(buf, sizeof(buf), fp);
 
 		if(s == NULL)

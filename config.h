@@ -33,7 +33,7 @@ extern int log_level;
 
 void read_cfg(char* name);
 
-#define MAX_EXCLUDE		20
+#define MAX_EXCLUDE		200
 extern int exclude[MAX_EXCLUDE];	// array of sensors to exclude
 
 #define max(a,b)	(a > b ? a : b)
