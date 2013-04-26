@@ -1,3 +1,15 @@
+macfanctld (0.6~mactel1ubuntu3~raring1) raring; urgency=low
+
+  * Update for Raring.
+
+ -- Mikael Strom <mikael@sesamiq.com>  Fri, 26 Apr 2013 21:58:40 +0800
+
+macfanctld (0.6~mactel1ubuntu3~quantal1) quantal; urgency=low
+
+  * Updated for Quantal.
+
+ -- Mikael Strom <mikael@sesamiq.com>  Mon, 22 Oct 2012 23:49:02 +0800
+
 macfanctld (0.6~mactel1ubuntu3~quantal) precise; urgency=low
 
   * Updated for Quantal.
