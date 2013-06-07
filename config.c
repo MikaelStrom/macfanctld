@@ -20,124 +20,100 @@
 #include <ctype.h>
 #include "config.h"
 
-//-----------------------------------------------------------------------------
-
 static FILE *fp;
 
-float temp_avg_floor = 40;		// default values if no config file is found
-float temp_avg_ceiling = 50;
+// default values if no config file is found
+float temp_avg_floor = 45;
+float temp_avg_ceiling = 58;
 
-float temp_TC0P_floor = 40;
-float temp_TC0P_ceiling = 50;
+float temp_TC0P_floor = 50;
+float temp_TC0P_ceiling = 58;
 
-float temp_TG0P_floor = 40;
-float temp_TG0P_ceiling = 50;
+float temp_TG0P_floor = 50;
+float temp_TG0P_ceiling = 58;
 
 float fan_min = 0;
-float fan_max = 6200;			// fixed max value
+float fan_max = 6500;
 
 int log_level = 0;
 
-int exclude[MAX_EXCLUDE];		// array of sensors to exclude
+// array of sensors to exclude
+int exclude[MAX_EXCLUDE];
 
-//-----------------------------------------------------------------------------
-
-int match(char* name, char* buf)
-{
+int match(char* name, char* buf) {
 	char* start = buf;
 	char* end = buf;
 
 	if(strlen(buf) < 1)
-	{
 		return 0;
-	}
 
 	// skip preceeding ws
 	while(*start && isblank(*start))
-	{
 		++start;
-	}
 
 	// skip to end
 	while(*end)
-	{
 		++end;
-	}
 
 	// delete ws backwards from end
-	while(end > start && isblank(*end))
-	{
+	while(end > start && isblank(*end)) {
 		*end = 0;
 		--end;
 	}
 
 	// compare strings
-
 	return strcmp(name, start) == 0;
 }
 
-//-----------------------------------------------------------------------------
-
-int get_val(char *buf)
-{
+int get_val(char *buf) {
 	while(isblank(*buf))
-	{
 		++buf;
-	}
 
 	if(! *buf)
-	{
 		return -1;
-	}
 
 	return atoi(buf);
 }
 
-//-----------------------------------------------------------------------------
 // format is: name : integer
-
-int read_param(char* name, int min_val, int max_val, int def)
-{
+int read_param(char* name, int min_val, int max_val, int def) {
 	fseek(fp, 0, SEEK_SET);
 
-	while(1)
-	{
+	while(1) {
 		char buf[64];
 		char *s = fgets(buf, sizeof(buf), fp);
 
+		// exit when no more to read
 		if(s == NULL)
-		{
-			break;						// exit when no more to read
-		}
+			break;
 
+		// skip comments
 		if(buf[0] == '#' || buf[0] == '\n')
-		{
-			continue;					// skip comments
-		}
+			continue;
 
-		char *colon = strchr(buf, ':');	// find colon
-		if(colon == NULL)
-		{
+		// find colon
+		char *colon = strchr(buf, ':');
+		if(colon == NULL) {
 			printf("Ill formed line in config file: %s\n", buf);
 			continue;
 		}
 
-		*colon = 0;						// terminate string at colon
+		// terminate string at colon
+		*colon = 0;
 
-		if(match(name, buf))
-		{
+		if(match(name, buf)) {
 			int val = get_val(colon + 1);	// get value
 
-			if(val < 0)
-			{
+			if(val < 0) {
 				printf("Ill formed line in config file: %s\n", buf);
 				continue;
-			}
-			else
-			{
-				val = min(max_val, val);// clamp
+			} else {
+				// clamp
+				val = min(max_val, val);
 				val = max(min_val, val);
-				return val;				// success
+
+				// success
+				return val;
 			}
 		}
 	}
@@ -145,57 +121,45 @@ int read_param(char* name, int min_val, int max_val, int def)
 	return def;
 }
 
-//-----------------------------------------------------------------------------
 // format is: exclude : integer {integer}
-
-void read_exclude_list()
-{
+void read_exclude_list() {
 	fseek(fp, 0, SEEK_SET);
 
-	while(1)
-	{
+	while(1) {
 		char buf[256];
 		char *s = fgets(buf, sizeof(buf), fp);
 
+		// exit when no more to read
 		if(s == NULL)
-		{
-			break;						// exit when no more to read
-		}
+			break;
 
+		// skip comments
 		if(buf[0] == '#' || buf[0] == '\n')
-		{
-			continue;					// skip comments
-		}
+			continue;
 
-		char *colon = strchr(buf, ':');	// find colon
-		if(colon == NULL)
-		{
+		// find colon
+		char *colon = strchr(buf, ':');
+		if(colon == NULL) {
 			printf("Ill formed line in config file: %s\n", buf);
 			continue;
 		}
 
-		*colon = 0;						// terminate string at colon
+		// terminate string at colon
+		*colon = 0;
 
-		if(match("exclude", buf))
-		{
+		if(match("exclude", buf)) {
 			int i;
 			char* values = colon + 1;
-		
-			// get values
 
-			for(i = 0; i < MAX_EXCLUDE; ++i)
-			{
+			// get values
+			for(i = 0; i < MAX_EXCLUDE; ++i) {
 				while(isspace(*values) || *values == ',')
-				{
 					++values;
-				}
-				
-				if(isdigit(*values))
-				{
+
+				if(isdigit(*values)) {
 					int val = get_val(values);
 					
-					if(val < 0)
-					{
+					if(val < 0) {
 						printf("Ill formed line in config file: %s\n", buf);
 						return;
 					}
@@ -203,16 +167,11 @@ void read_exclude_list()
 					exclude[i] = val;
 					
 					while(isdigit(*values))
-					{
 						++values;
-					}
-				}
-				else if(*values == 0)
-				{
-					return;		// done
-				}
-				else
-				{
+				} else if(*values == 0) {
+					// done
+					return;
+				} else {
 					printf("Ill formed line in config file: %s\n", buf);
 					return;
 				}
@@ -221,18 +180,14 @@ void read_exclude_list()
 	}
 }
  
-//-----------------------------------------------------------------------------
-
-void read_cfg(char* name)
-{
+void read_cfg(char* name) {
 	memset(exclude, 0, sizeof(exclude));
 
 	fp = fopen(name, "r");
 
-	if(fp != NULL)
-	{
+	if(fp != NULL) {
 		temp_avg_ceiling = read_param("temp_avg_ceiling",	0, 90, 50);
-		temp_avg_floor = read_param("temp_avg_floor", 		0, temp_avg_ceiling - 1, 40);
+		temp_avg_floor = read_param("temp_avg_floor",		0, temp_avg_ceiling - 1, 40);
 
 		temp_TC0P_ceiling = read_param("temp_TC0P_ceiling",	0, 90, 65);
 		temp_TC0P_floor = read_param("temp_TC0P_floor",		0, temp_TC0P_ceiling - 1, 50);
@@ -247,9 +202,7 @@ void read_cfg(char* name)
 		read_exclude_list();
 
 		fclose(fp);
-	}
-	else
-	{
+	} else {
 		printf("Could not open config file %s\n", name);
 	}
 
@@ -266,20 +219,15 @@ void read_cfg(char* name)
 
 	printf("\tfan_min: %.0f\n", fan_min);
 
-	if(exclude[0] != 0)
-	{
+	if(exclude[0] != 0) {
 		int i;
 
 		printf("\texclude: ");
 
 		for(i = 0; i < MAX_EXCLUDE && exclude[i] != 0; ++i)
-		{
 			printf("temp%d_input ", exclude[i]);
-		}
 		printf("\n");
 	}
-	
+
 	printf("\tlog_level: %d\n", log_level);
 }
-
-//-----------------------------------------------------------------------------

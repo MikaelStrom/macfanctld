@@ -27,4 +27,3 @@ install:
 
 uninstall:
 	rm $(SBIN_DIR)/macfanctld $(INITD_DIR)/macfanctl $(ETC_DIR)/macfanctl.conf
-

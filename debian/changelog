@@ -1,3 +1,22 @@
+macfanctld (0.7-0) raring; urgency=low
+
+  * Bump version
+  * Bump Standards-Version (no change)
+  * Use fan*_output node to control fans speed
+  * Code styling and cleanup
+    (Sorry Mikael, I am obsessive about vertical space loss and white spaces)
+  * New defaults in config
+
+ -- Eugene San (eugenesan) <eugenesan@gmail.com>  Fri, 07 Jun 2013 10:20:11 +0300
+
+macfanctld (0.6-0) raring; urgency=low
+
+  * Updated for Raring.
+  * Removed bogus patches.
+  * Sanetize versioning.
+
+ -- Eugene San (eugenesan) <eugenesan@gmail.com>  Thu, 18 Apr 2013 01:57:27 +0300
+
 macfanctld (0.6~mactel1ubuntu3~raring1) raring; urgency=low
 
   * Update for Raring.

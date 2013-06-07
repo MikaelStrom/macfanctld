@@ -3,8 +3,8 @@ Section: misc
 Priority: optional
 Maintainer: Mikael Strom <mikael@sesamiq.com>
 Build-Depends: debhelper (>= 7)
-Standards-Version: 3.8.4
-Homepage: 
+Standards-Version: 3.9.4
+Homepage: https://github.com/MikaelStrom/macfanctld
 
 Package: macfanctld
 Architecture: any

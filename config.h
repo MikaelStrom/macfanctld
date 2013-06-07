@@ -17,6 +17,10 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
+#define MAX_EXCLUDE	20
+#define max(a,b)	(a > b ? a : b)
+#define min(a,b)	(a < b ? a : b)
+
 extern float temp_avg_floor;
 extern float temp_avg_ceiling;
 
@@ -33,10 +37,7 @@ extern int log_level;
 
 void read_cfg(char* name);
 
-#define MAX_EXCLUDE		20
-extern int exclude[MAX_EXCLUDE];	// array of sensors to exclude
-
-#define max(a,b)	(a > b ? a : b)
-#define min(a,b)	(a < b ? a : b)
+// array of sensors to exclude
+extern int exclude[MAX_EXCLUDE];
 
 #endif /* CONFIG_H_ */
