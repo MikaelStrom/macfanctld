@@ -32,8 +32,6 @@
 #include "control.h"
 #include "config.h"
 
-//------------------------------------------------------------------------------
-
 #define PID_FILE	"/var/run/macfanctld.pid"
 #define LOG_FILE	"/var/log/macfanctl.log"
 #define CFG_FILE	"/etc/macfanctl.conf"
@@ -41,8 +39,6 @@
 int running = 1;
 int lock_fd = -1;
 int reload = 0;
-
-//------------------------------------------------------------------------------
 
 void signal_handler(int sig)
 {
@@ -58,34 +54,36 @@ void signal_handler(int sig)
 	}
 }
 
-//-----------------------------------------------------------------------------
-
-void daemonize()
-{
+void daemonize() {
+	// already a daemon
 	if (getppid() == 1)
-		return; // already a daemon
+		return;
 
 	// fork of new process
 	pid_t pid = fork();
 
+	// fork error
 	if(pid < 0)
-		exit(1); 		// fork error
+		exit(1);
 
+	// parent exits
 	if(pid > 0)
-		exit(0);		// parent exits
+		exit(0);
 
 	// child (daemon) continues
 
 #ifdef DEBUG
-	sleep(20);			// time to attach debugger to this process
+	// time to attach debugger to this process
+	sleep(20);
 #endif
+	// create a new session
+	setsid();
 
-	setsid(); 			// create a new session
-
+	// set createfile permissions
 #ifdef DEBUG
 	umask(0);
 #else
-	umask(022); // set createfile permissions
+	umask(022);
 #endif
 
 	freopen(LOG_FILE, "w", stdout);
@@ -96,82 +94,68 @@ void daemonize()
 	// create lockfile
 	int lock_fd = open(PID_FILE, O_RDWR | O_CREAT, 0640);
 
+	// open failed, we're a duplicate
 	if(lock_fd < 0)
-		exit(1); 		// open failed, we're a duplicate
+		exit(1);
 
+	// lock failed - no idea what this means...
 	if(lockf(lock_fd, F_TLOCK, 0) < 0)
-		exit(0); 		// lock failed - no idea what this means...
+		exit(0);
 
 	// first instance continues...
 	// write pid to file, and leave file open (blocking duplicates)
-
 	char str[32];
 	sprintf(str, "%d\n", getpid());
 	write(lock_fd, str, strlen(str));
 }
 
-//-----------------------------------------------------------------------------
 
-void usage()
-{
+void usage() {
 	printf("usage: macfanctld [-f]\n");
 	printf("  -f  run in foregound\n");
 	exit(-1);
 }
 
-//-----------------------------------------------------------------------------
-
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	int i;
 	int daemon = 1;
 
 	// setup daemon
-	signal(SIGCHLD, SIG_IGN); 			// ignore child
-	signal(SIGTSTP, SIG_IGN); 			// ignore tty signals
+	signal(SIGCHLD, SIG_IGN);		// ignore child
+	signal(SIGTSTP, SIG_IGN);		// ignore tty signals
 	signal(SIGTTOU, SIG_IGN);
 	signal(SIGTTIN, SIG_IGN);
-	signal(SIGINT, signal_handler); 	// catch Ctrl-C signal (terminating in foreground mode)
-	signal(SIGHUP, signal_handler); 	// catch hangup signal (reload config)
-	signal(SIGTERM, signal_handler); 	// catch kill signal
+	signal(SIGINT, signal_handler);		// catch Ctrl-C signal (terminating in foreground mode)
+	signal(SIGHUP, signal_handler);		// catch hangup signal (reload config)
+	signal(SIGTERM, signal_handler);	// catch kill signal
 
-	for(i = 1; i < argc; ++i)
-	{
+	for(i = 1; i < argc; ++i) {
 		if(strcmp(argv[i], "-f") == 0)
-		{
 			daemon = 0;
-		}
 		else
-		{
 			usage();
-		}
 	}
 
 	if(daemon)
-	{
 		daemonize();
-	}
 	else
-	{
 		printf("Running in foreground, log to stdout.\n");
-	}
 
-	// main loop
-
+	// main loop setup
 	read_cfg(CFG_FILE);
 
 	find_applesmc();
 	scan_sensors();
 
 	running = 1;
-	while(running)
-	{
+
+	// main loop
+	while(running) {
 		adjust();
 
 		logger();
 
-		if(reload)
-		{
+		if(reload) {
 			read_cfg(CFG_FILE);
 			scan_sensors();
 			reload = 0;
@@ -181,9 +165,7 @@ int main(int argc, char *argv[])
 	}
 
 	// close pid file and delete it
-
-	if(lock_fd != -1)
-	{
+	if(lock_fd != -1) {
 		close(lock_fd);
 		unlink(PID_FILE);
 	}
@@ -192,6 +174,3 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
-
-//-----------------------------------------------------------------------------
-
