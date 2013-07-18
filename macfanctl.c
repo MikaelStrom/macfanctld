@@ -36,11 +36,12 @@
 
 #define PID_FILE	"/var/run/macfanctld.pid"
 #define LOG_FILE	"/var/log/macfanctl.log"
-#define CFG_FILE	"/etc/macfanctl.conf"
+#define DEFAULT_CFG_FILE	"/etc/macfanctl.conf"
 
 int running = 1;
 int lock_fd = -1;
 int reload = 0;
+char *cfg_file = DEFAULT_CFG_FILE;
 
 //------------------------------------------------------------------------------
 
@@ -114,7 +115,8 @@ void daemonize()
 
 void usage()
 {
-	printf("usage: macfanctld [-f]\n");
+	printf("usage: macfanctld [-c FILE] [-f]\n");
+	printf("  -c  use specified config (default: %s)\n", DEFAULT_CFG_FILE);
 	printf("  -f  run in foregound\n");
 	exit(-1);
 }
@@ -137,7 +139,11 @@ int main(int argc, char *argv[])
 
 	for(i = 1; i < argc; ++i)
 	{
-		if(strcmp(argv[i], "-f") == 0)
+		if(strcmp(argv[i], "-c") == 0 && i + 1 < argc)
+		{
+			cfg_file = argv[++i];
+		}
+		else if(strcmp(argv[i], "-f") == 0)
 		{
 			daemon = 0;
 		}
@@ -158,7 +164,7 @@ int main(int argc, char *argv[])
 
 	// main loop
 
-	read_cfg(CFG_FILE);
+	read_cfg(cfg_file);
 
 	find_applesmc();
 	scan_sensors();
@@ -172,7 +178,7 @@ int main(int argc, char *argv[])
 
 		if(reload)
 		{
-			read_cfg(CFG_FILE);
+			read_cfg(cfg_file);
 			scan_sensors();
 			reload = 0;
 		}
