@@ -234,7 +234,7 @@ void calc_fan()
 	float fan_window = fan_max - fan_min;
 	float temp_avg_window = temp_avg_ceiling - temp_avg_floor;
 	float normalized_temp =(temp_avg - temp_avg_floor) / temp_avg_window;
-	float fan_avg_speed =(normalized_temp * fan_window);
+	float fan_avg_speed =fan_min + (normalized_temp * fan_window);
 	if(fan_avg_speed > fan_speed)
 	{
 		fan_speed = fan_avg_speed;
@@ -247,7 +247,7 @@ void calc_fan()
 	{
 		float temp_window = temp_TC0P_ceiling - temp_TC0P_floor;
 		float normalized_temp =(sensor_TC0P->value - temp_TC0P_floor) / temp_window;
-		float fan_TC0P_speed =(normalized_temp * fan_window);
+		float fan_TC0P_speed =fan_min + (normalized_temp * fan_window);
 		if(fan_TC0P_speed > fan_speed)
 		{
 			fan_speed = fan_TC0P_speed;
@@ -261,7 +261,7 @@ void calc_fan()
 	{
 		float temp_window = temp_TG0P_ceiling - temp_TG0P_floor;
 		float normalized_temp =(sensor_TG0P->value - temp_TG0P_floor) / temp_window;
-		float fan_TG0P_speed =(normalized_temp * fan_window);
+		float fan_TG0P_speed =fan_min + (normalized_temp * fan_window);
 		if(fan_TG0P_speed > fan_speed)
 		{
 			fan_speed = fan_TG0P_speed;
