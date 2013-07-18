@@ -63,7 +63,7 @@ struct sensor
 	int id;
 	int excluded;
 	char name[SENSKEY_MAXLEN];
-	char fname[PATH_MAX];
+	int fd;
 	float value;
 };
 
@@ -182,25 +182,23 @@ void read_sensors()
 		{
 			// read temp value
 
-			int fd = open(sensors[i].fname, O_RDONLY);
+			int fd = sensors[i].fd;
 			if(fd < 0)
 			{
-				printf("Error: Can't open %s\n", sensors[i].fname);
-				fflush(stdout);
+				continue;
 			}
 			else
 			{
 				char val_buf[16];
-				int n = read(fd, val_buf, sizeof(val_buf));
+				int n = pread(fd, val_buf, sizeof(val_buf), 0);
 				if(n < 1)
 				{
-					printf("Error: Can't read  %s\n", sensors[i].fname);
+					printf("Error: Can't read  %s/temp%d_input\n", base_path, sensors[i].id);
 				}
 				else
 				{
 					sensors[i].value = (float)atoi(val_buf) / 1000.0;
 				}
-				close(fd);
 			}
 		}
 	}
@@ -431,7 +429,7 @@ void scan_sensors()
 			// set id, check exclude list and save file name
 			sensors[i].id = i + 1;
 			sensors[i].excluded = 0;
-			sprintf(sensors[i].fname, "%s/temp%d_input", base_path, sensors[i].id);
+			sensors[i].fd = -1;
 
 			for(j = 0; j < MAX_EXCLUDE && exclude[j] != 0; ++j)
 			{
@@ -472,6 +470,14 @@ void scan_sensors()
 					strncpy(sensors[i].name, key_buf, SENSKEY_MAXLEN);
 				}
 				fclose(fp);
+			}
+
+			sprintf(fname, "%s/temp%d_input", base_path, sensors[i].id);
+			sensors[i].fd = open(fname, O_RDONLY);
+			if(sensors[i].fd < 0)
+			{
+				printf("Error: Can't open %s\n", fname);
+				fflush(stdout);
 			}
 		}
 
@@ -563,6 +569,20 @@ void logger()
 
 		printf("\n");
 		fflush(stdout);
+	}
+}
+
+//------------------------------------------------------------------------------
+
+void deallocate_sensors(void)
+{
+	size_t i;
+	for(i = 0; i < sensor_count; ++i)
+	{
+		if(sensors[i].fd != -1)
+		{
+			close(sensors[i].fd);
+		}
 	}
 }
 

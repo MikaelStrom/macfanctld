@@ -180,6 +180,8 @@ int main(int argc, char *argv[])
 		sleep(5);
 	}
 
+	deallocate_sensors();
+
 	// close pid file and delete it
 
 	if(lock_fd != -1)
