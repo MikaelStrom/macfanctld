@@ -20,6 +20,10 @@
 extern float temp_avg_floor;
 extern float temp_avg_ceiling;
 
+extern float temp_max_floor;
+extern float temp_max_ceiling;
+extern int temp_max_fan_min;
+
 extern float temp_TC0P_floor;
 extern float temp_TC0P_ceiling;
 
