@@ -35,8 +35,10 @@ struct
 	char *key;
 	char *desc;
 }
+
 sensor_desc[] =
 {
+	{"TA0P", "Ambient Air Temp"},
 	{"TB0T", "Battery TS_MAX Temp"},
 	{"TB1T", "Battery TS1 Temp"},
 	{"TB2T", "Battery TS2 Temp"},
@@ -50,9 +52,13 @@ sensor_desc[] =
 	{"TG1H", "Left Heat Pipe/Fin Stack Proximity Temp"},
 	{"TN0P", "MCP Proximity"},
 	{"TN0D", "MCP Die"},
+	{"Th0H", "Temperature NB/CPU/GPU HeatPipe 0 Proximity"},
+	{"Th1H", "Temperature NB/CPU/GPU HeatPipe 1 Proximity"},
 	{"Th2H", "Right Fin Stack Proximity Temp"},
+	{"TM0P", "Temperature FBDIMM Riser A incoming air Temp"},
 	{"Tm0P", "Battery Charger Proximity Temp"},
-	{"Ts0P", "Palm Rest Temp"}
+	{"Ts0P", "Left Palm Rest Temp"},
+	{"Ts1P", "Right Palm Rest Temp"}
 };
 #define N_DESC			(sizeof(sensor_desc) / sizeof(sensor_desc[0]))
 
@@ -79,6 +85,7 @@ int sensor_count = 0;
 int fan_count = 0;
 float temp_avg = 0;
 int fan_speed;
+float temp_max = 0;
 
 struct sensor *sensors = NULL;
 struct sensor *sensor_TC0P = NULL;
@@ -88,6 +95,7 @@ struct sensor *sensor_TG0P = NULL;
 #define CTL_AVG		1
 #define CTL_TC0P	2
 #define CTL_TG0P	3
+#define CTL_MAX		4
 
 int fan_ctl = 0;		// which sensor controls fan
 
@@ -205,8 +213,9 @@ void read_sensors()
 		}
 	}
 
-	// calc average
+	// calc average and max
 
+	temp_max = 0.0;
 	temp_avg = 0.0;
 	int active_sensors = 0;
 
@@ -215,6 +224,8 @@ void read_sensors()
 		if(! sensors[i].excluded)
 		{
 			temp_avg += sensors[i].value;
+			if(sensors[i].value > temp_max)
+				temp_max = sensors[i].value;
 			++active_sensors;
 		}
 	}
@@ -234,11 +245,23 @@ void calc_fan()
 	float fan_window = fan_max - fan_min;
 	float temp_avg_window = temp_avg_ceiling - temp_avg_floor;
 	float normalized_temp =(temp_avg - temp_avg_floor) / temp_avg_window;
-	float fan_avg_speed =(normalized_temp * fan_window);
+	float fan_avg_speed =fan_min + (normalized_temp * fan_window);
 	if(fan_avg_speed > fan_speed)
 	{
 		fan_speed = fan_avg_speed;
 		fan_ctl = CTL_AVG;
+	}
+
+	// calc fan speed for max
+
+	float temp_max_fan_window = fan_max - temp_max_fan_min;
+	float temp_max_window = temp_max_ceiling - temp_max_floor;
+	normalized_temp =(temp_max - temp_max_floor) / temp_max_window;
+	float fan_max_speed =temp_max_fan_min + (normalized_temp * temp_max_fan_window);
+	if(fan_max_speed > fan_speed)
+	{
+		fan_speed = fan_avg_speed;
+		fan_ctl = CTL_MAX;
 	}
 
 	// calc fan speed for TC0P
@@ -247,7 +270,7 @@ void calc_fan()
 	{
 		float temp_window = temp_TC0P_ceiling - temp_TC0P_floor;
 		float normalized_temp =(sensor_TC0P->value - temp_TC0P_floor) / temp_window;
-		float fan_TC0P_speed =(normalized_temp * fan_window);
+		float fan_TC0P_speed =fan_min + (normalized_temp * fan_window);
 		if(fan_TC0P_speed > fan_speed)
 		{
 			fan_speed = fan_TC0P_speed;
@@ -261,7 +284,7 @@ void calc_fan()
 	{
 		float temp_window = temp_TG0P_ceiling - temp_TG0P_floor;
 		float normalized_temp =(sensor_TG0P->value - temp_TG0P_floor) / temp_window;
-		float fan_TG0P_speed =(normalized_temp * fan_window);
+		float fan_TG0P_speed =fan_min + (normalized_temp * fan_window);
 		if(fan_TG0P_speed > fan_speed)
 		{
 			fan_speed = fan_TG0P_speed;
@@ -530,10 +553,12 @@ void logger()
 
 	if(log_level > 0)
 	{
-		printf("Speed: %d, %sAVG: %.1fC" ,
-			   fan_speed,
-			   fan_ctl == CTL_AVG ? "*" : " ",
-			   temp_avg);
+		printf("Speed: %d, %sAVG: %.1fC, %sMAX: %.1fC" ,
+					 fan_speed,
+					 fan_ctl == CTL_AVG ? "*" : " ",
+					 temp_avg,
+					 fan_ctl == CTL_MAX ? "*" : " ",
+					 temp_max);
 
 		if(sensor_TC0P != NULL)
 		{

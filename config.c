@@ -27,6 +27,10 @@ static FILE *fp;
 float temp_avg_floor = 40;		// default values if no config file is found
 float temp_avg_ceiling = 50;
 
+float temp_max_ceiling = 255;
+float temp_max_floor = 254;
+int temp_max_fan_min = 4000;
+
 float temp_TC0P_floor = 40;
 float temp_TC0P_ceiling = 50;
 
@@ -213,7 +217,7 @@ void read_exclude_list()
 				}
 				else
 				{
-					printf("Ill formed line in config file: %s\n", buf);
+					printf("Malformed line in config file: %s\n", buf);
 					return;
 				}
 			}
@@ -240,7 +244,11 @@ void read_cfg(char* name)
 		temp_TG0P_ceiling = read_param("temp_TG0P_ceiling",	0, 90, 80);
 		temp_TG0P_floor = read_param("temp_TG0P_floor",		0, temp_TG0P_ceiling - 1, 65);
 
-		fan_min = read_param("fan_min", 0, 6200, 0);
+		temp_max_ceiling = read_param("temp_max_ceiling", 0, 90, 80);
+		temp_max_floor = read_param("temp_max_floor", 0, temp_max_ceiling - 1, 65);
+
+		fan_min = read_param("fan_min", 0, fan_max, 0);
+		temp_max_fan_min = read_param("temp_max_fan_min", fan_min, fan_max, 4000);
 
 		log_level = read_param("log_level", 0, 2, 0);
 		
@@ -257,6 +265,10 @@ void read_cfg(char* name)
 
 	printf("\ttemp_avg_floor: %.0f\n", temp_avg_floor);
 	printf("\ttemp_avg_ceiling: %.0f\n", temp_avg_ceiling);
+
+	printf("\ttemp_max_ceiling: %.0f\n", temp_max_ceiling);
+	printf("\ttemp_max_floor: %.0f\n", temp_max_floor);
+	printf("\ttemp_max_fan_min: %d\n", temp_max_fan_min);
 
 	printf("\ttemp_TC0P_floor: %.0f\n", temp_TC0P_floor);
 	printf("\ttemp_TC0P_ceiling: %.0f\n", temp_TC0P_ceiling);
