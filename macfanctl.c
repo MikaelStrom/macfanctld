@@ -115,7 +115,7 @@ void daemonize()
 void usage()
 {
 	printf("usage: macfanctld [-f]\n");
-	printf("  -f  run in foregound\n");
+	printf("  -f  run in foreground\n");
 	exit(-1);
 }
 
