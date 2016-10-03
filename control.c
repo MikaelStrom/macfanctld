@@ -78,7 +78,7 @@ char fan2_man[PATH_MAX];
 int sensor_count = 0;
 int fan_count = 0;
 float temp_avg = 0;
-int fan_speed;
+int fan_speed = -1;
 
 struct sensor *sensors = NULL;
 struct sensor *sensor_TC0P = NULL;
@@ -346,9 +346,13 @@ void set_fan()
 
 void adjust()
 {
+	int old_fan_speed = fan_speed;
 	read_sensors();
 	calc_fan();
-	set_fan();
+	if (old_fan_speed != fan_speed)
+	{
+		set_fan();
+	}
 }
 
 //------------------------------------------------------------------------------
