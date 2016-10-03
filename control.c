@@ -198,6 +198,7 @@ void read_sensors()
 				}
 				else
 				{
+					val_buf[n] = '\0';
 					sensors[i].value = (float)atoi(val_buf) / 1000.0;
 				}
 				close(fd);
