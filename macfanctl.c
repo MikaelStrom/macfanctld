@@ -188,6 +188,8 @@ int main(int argc, char *argv[])
 		unlink(PID_FILE);
 	}
 
+	deallocate_sensors();
+
 	printf("Exiting.\n");
 
 	return 0;

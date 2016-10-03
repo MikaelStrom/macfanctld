@@ -21,5 +21,6 @@ void find_applesmc();	// called once at startup, before anything else!
 void scan_sensors();
 void adjust();
 void logger();
+void deallocate_sensors();
 
 #endif /* CONTROL_H_ */

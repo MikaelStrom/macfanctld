@@ -14,6 +14,7 @@
  *  GNU General Public License for more details.
  */
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,6 +25,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include "config.h"
+#include "control.h"
 
 //------------------------------------------------------------------------------
 
@@ -63,7 +65,7 @@ struct sensor
 	int id;
 	int excluded;
 	char name[SENSKEY_MAXLEN];
-	char fname[PATH_MAX];
+	char *fname;
 	float value;
 };
 
@@ -392,7 +394,7 @@ void scan_sensors()
 	int count = 0;
 	while(count < 100)	// more than 100 sensors is an error!
 	{
-		char fname[512];
+		char fname[PATH_MAX];
 
 		// sensor numbering start at 1
 		sprintf(fname, "%s/temp%d_input", base_path, count + 1);
@@ -414,11 +416,7 @@ void scan_sensors()
 	{
 		// Get sensor id, labels and descriptions, check exclude list
 
-		if(sensors != NULL)
-		{
-			free(sensors);
-		}
-
+		deallocate_sensors();
 		sensors = malloc(sizeof(struct sensor) * sensor_count);
 		assert(sensors != NULL);
 
@@ -426,12 +424,12 @@ void scan_sensors()
 
 		for(i = 0; i < sensor_count; ++i)
 		{
-			char fname[512];
+			char fname[PATH_MAX];
 
 			// set id, check exclude list and save file name
 			sensors[i].id = i + 1;
 			sensors[i].excluded = 0;
-			sprintf(sensors[i].fname, "%s/temp%d_input", base_path, sensors[i].id);
+			asprintf(&sensors[i].fname, "%s/temp%d_input", base_path, sensors[i].id);
 
 			for(j = 0; j < MAX_EXCLUDE && exclude[j] != 0; ++j)
 			{
@@ -564,6 +562,24 @@ void logger()
 		printf("\n");
 		fflush(stdout);
 	}
+}
+
+void deallocate_sensors()
+{
+	int i;
+	if(sensors == NULL)
+	{
+		return;
+	}
+	for(i = 0; i < sensor_count; ++i)
+	{
+		if(sensors[i].fname != NULL)
+		{
+			free(sensors[i].fname);
+		}
+	}
+	free(sensors);
+	sensors = NULL;
 }
 
 //------------------------------------------------------------------------------
