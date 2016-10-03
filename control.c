@@ -84,12 +84,15 @@ struct sensor *sensors = NULL;
 struct sensor *sensor_TC0P = NULL;
 struct sensor *sensor_TG0P = NULL;
 
-#define CTL_NONE	0	// sensor control fan flags
-#define CTL_AVG		1
-#define CTL_TC0P	2
-#define CTL_TG0P	3
+// sensor control fan flags
+enum ctl {
+	CTL_NONE,
+	CTL_AVG,
+	CTL_TC0P,
+	CTL_TG0P,
+};
 
-int fan_ctl = 0;		// which sensor controls fan
+enum ctl fan_ctl = CTL_NONE;	// which sensor controls fan
 
 //------------------------------------------------------------------------------
 
