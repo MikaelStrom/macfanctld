@@ -12,7 +12,7 @@ ETC_DIR = $(DESTDIR)/etc
 all: macfanctld
 
 macfanctld: macfanctl.c control.c config.c control.h config.h
-	$(CC) $(CFLAGS) macfanctl.c control.c config.c -o macfanctld 
+	$(CC) $(CFLAGS) macfanctl.c control.c config.c -lm -o macfanctld 
 
 clean:
 	dh_testdir
