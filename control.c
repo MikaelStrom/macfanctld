@@ -239,6 +239,35 @@ void find_applesmc()
 
 //------------------------------------------------------------------------------
 
+float calc_min_temp_to_consider()
+{
+    float stdev;
+    float sum_val;
+    float mean;
+    int i;
+    int count;
+    count=0;
+    sum_val=0;
+    for ( i = 0; i < sensor_count ; i++ ) 
+    {
+        if (sensors[i].value > 5)
+        {
+            sum_val += (float)(sensors[i].value);
+            count++;
+        }
+    }
+    mean = count>0?(sum_val / (float)count):0;
+    sum_val=0;
+    for ( i = 0; i < sensor_count ; i++ ) 
+    {
+        if (sensors[i].value > 5)
+            sum_val += pow(((float)sensors[i].value-mean), 2);
+    }
+    stdev = count>0?sqrt((sum_val/(float)count)):0;
+    printf("Temp stdev= %.2f avg=%.2f\n", stdev,mean);
+    return mean - 2.0*stdev;
+}
+
 void read_sensors()
 {
 	int i;
@@ -275,17 +304,29 @@ void read_sensors()
 
 	temp_avg = 0.0;
 	int active_sensors = 0;
-
+    float min_temp_to_consider;
+    if (exclude_extraneus_sensors)
+    {
+        min_temp_to_consider = calc_min_temp_to_consider();
+        printf("min temp to consier= %.2f\n",min_temp_to_consider);
+    }
 	for(i = 0; i < sensor_count; ++i)
 	{
 		if(! sensors[i].excluded)
 		{
-			temp_avg += sensors[i].value;
-			++active_sensors;
+		    if (exclude_extraneus_sensors && sensors[i].value < min_temp_to_consider)
+		    {
+    		    printf("Sensor %d is autoexcluded. Temp=%f\n",i,sensors[i].value);
+    		}
+    		else
+    		{
+			    temp_avg += sensors[i].value;
+			    ++active_sensors;
+		    }
 		}
 	}
 
-	temp_avg = temp_avg / active_sensors;
+	temp_avg = active_sensors>0?(temp_avg / active_sensors):50.0;
 }
 
 //------------------------------------------------------------------------------
@@ -350,7 +391,7 @@ void set_fan()
 
     for(i=0; i<fans; i++)
     {
-        printf("Put fan %d at %s at %d rpm\n",i+1,fan_min_path[i],fan_speed);
+        //printf("Put fan %d at %s at %d rpm\n",i+1,fan_min_path[i],fan_speed);
     	// update fan i
     	fd = open(fan_min_path[i], O_WRONLY);
 	    if(fd < 0)

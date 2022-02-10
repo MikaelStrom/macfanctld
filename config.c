@@ -35,6 +35,7 @@ float temp_TG0P_ceiling = 50;
 
 float fan_min = 0;
 float fan_max = 6200;			// fixed max value
+int exclude_extraneus_sensors = 0;
 
 int log_level = 0;
 
@@ -241,6 +242,7 @@ void read_cfg(char* name)
 		temp_TG0P_floor = read_param("temp_TG0P_floor",		0, temp_TG0P_ceiling - 1, 65);
 
 		fan_min = read_param("fan_min", 0, 6200, 0);
+		exclude_extraneus_sensors  = read_param("exclude_extraneus_sensors", 0, 1, 0);
 
 		log_level = read_param("log_level", 0, 2, 0);
 		

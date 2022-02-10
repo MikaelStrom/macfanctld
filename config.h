@@ -29,6 +29,8 @@ extern float temp_TG0P_ceiling;
 extern float fan_min;
 extern float fan_max;
 
+extern int exclude_extraneus_sensors;
+
 extern int log_level;
 
 void read_cfg(char* name);
