@@ -72,8 +72,10 @@ struct sensor
 char base_path[PATH_MAX];
 char fan1_min[PATH_MAX];
 char fan2_min[PATH_MAX];
+char fan3_min[PATH_MAX];
 char fan1_man[PATH_MAX];
 char fan2_man[PATH_MAX];
+char fan3_man[PATH_MAX];
 
 int sensor_count = 0;
 int fan_count = 0;
@@ -165,8 +167,10 @@ void find_applesmc()
 
 	sprintf(fan1_min, "%s/fan1_min", base_path);
 	sprintf(fan2_min, "%s/fan2_min", base_path);
+	sprintf(fan3_min, "%s/fan3_min", base_path);
 	sprintf(fan1_man, "%s/fan1_manual", base_path);
 	sprintf(fan2_man, "%s/fan2_manual", base_path);
+	sprintf(fan3_man, "%s/fan3_manual", base_path);
 
 	printf("Found applesmc at %s\n", base_path);
 }
@@ -338,6 +342,36 @@ void set_fan()
 			close(fd);
 		}
 	}
+	// update fan 3
+
+	if(fan_count > 2)
+	{
+		fd = open(fan3_min, O_WRONLY);
+		if(fd < 0)
+		{
+			printf("Error: Can't open %s\n", fan3_min);
+		}
+		else
+		{
+			sprintf(buf, "%d", fan_speed);
+			write(fd, buf, strlen(buf));
+			close(fd);
+		}
+
+		// set fan 2 manual to zero
+
+		fd = open(fan3_man, O_WRONLY);
+		if(fd < 0)
+		{
+			printf("Error: Can't open %s\n", fan3_man);
+		}
+		else
+		{
+			strcpy(buf, "0");
+			write(fd, buf, strlen(buf));
+			close(fd);
+		}
+	}
 
 	fflush(stdout);
 }
@@ -386,6 +420,17 @@ void scan_sensors()
 		fan_count = 2;
 		printf("Found 2 fans.\n");
 	}
+        result = stat(fan3_min, &buf);
+        if(result != 0)
+        {
+                printf("Found 2 fan.\n");
+                fan_count = 2;
+        }
+        else
+        {
+                fan_count = 3;
+                printf("Found 3 fans.\n");
+        }
 
 	// count number of sensors
 
