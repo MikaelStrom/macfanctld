@@ -72,8 +72,13 @@ struct sensor
 char base_path[PATH_MAX];
 char fan1_min[PATH_MAX];
 char fan2_min[PATH_MAX];
+char fan3_min[PATH_MAX];
 char fan1_man[PATH_MAX];
 char fan2_man[PATH_MAX];
+char fan3_man[PATH_MAX];
+char fan1_out[PATH_MAX];
+char fan2_out[PATH_MAX];
+char fan3_out[PATH_MAX];
 
 int sensor_count = 0;
 int fan_count = 0;
@@ -165,8 +170,13 @@ void find_applesmc()
 
 	sprintf(fan1_min, "%s/fan1_min", base_path);
 	sprintf(fan2_min, "%s/fan2_min", base_path);
+	sprintf(fan3_min, "%s/fan3_min", base_path);
 	sprintf(fan1_man, "%s/fan1_manual", base_path);
 	sprintf(fan2_man, "%s/fan2_manual", base_path);
+	sprintf(fan3_man, "%s/fan3_manual", base_path);
+	sprintf(fan1_out, "%s/fan1_output", base_path);
+	sprintf(fan2_out, "%s/fan2_output", base_path);
+	sprintf(fan3_out, "%s/fan3_output", base_path);
 
 	printf("Found applesmc at %s\n", base_path);
 }
@@ -276,69 +286,58 @@ void calc_fan()
 
 //------------------------------------------------------------------------------
 
-void set_fan()
+// write one fan: manual=1 then target RPM to fan*_output (modern hwmon interface)
+static void set_one_fan(const char *man_path, const char *out_path, int speed)
 {
 	char buf[16];
-
-	// update fan 1
-
-	int fd = open(fan1_min, O_WRONLY);
+	int fd = open(man_path, O_WRONLY);
 	if(fd < 0)
 	{
-		printf("Error: Can't open %s\n", fan1_min);
+		printf("Error: Can't open %s\n", man_path);
+		return;
 	}
-	else
+	strcpy(buf, "1");
+	write(fd, buf, strlen(buf));
+	close(fd);
+	fd = open(out_path, O_WRONLY);
+	if(fd < 0)
 	{
-		sprintf(buf, "%d", fan_speed);
-		write(fd, buf, strlen(buf));
-		close(fd);
+		printf("Error: Can't open %s\n", out_path);
+		return;
 	}
+	sprintf(buf, "%d", speed);
+	write(fd, buf, strlen(buf));
+	close(fd);
+}
 
-	// set fan 1 manual to zero
+void set_fan()
+{
+	set_one_fan(fan1_man, fan1_out, fan_speed);
+	if(fan_count > 1)
+		set_one_fan(fan2_man, fan2_out, fan_speed);
+	if(fan_count > 2)
+		set_one_fan(fan3_man, fan3_out, fan_speed);
+	fflush(stdout);
+}
 
+// return all fans to SMC automatic control (called on clean exit)
+void restore_fans()
+{
+	char buf[16];
+	int fd;
+	strcpy(buf, "0");
 	fd = open(fan1_man, O_WRONLY);
-	if(fd < 0)
-	{
-		printf("Error: Can't open %s\n", fan1_man);
-	}
-	else
-	{
-		strcpy(buf, "0");
-		write(fd, buf, strlen(buf));
-		close(fd);
-	}
-
-	// update fan 2
-
+	if(fd >= 0) { write(fd, buf, strlen(buf)); close(fd); }
 	if(fan_count > 1)
 	{
-		fd = open(fan2_min, O_WRONLY);
-		if(fd < 0)
-		{
-			printf("Error: Can't open %s\n", fan2_min);
-		}
-		else
-		{
-			sprintf(buf, "%d", fan_speed);
-			write(fd, buf, strlen(buf));
-			close(fd);
-		}
-
-		// set fan 2 manual to zero
-
 		fd = open(fan2_man, O_WRONLY);
-		if(fd < 0)
-		{
-			printf("Error: Can't open %s\n", fan2_man);
-		}
-		else
-		{
-			strcpy(buf, "0");
-			write(fd, buf, strlen(buf));
-			close(fd);
-		}
+		if(fd >= 0) { write(fd, buf, strlen(buf)); close(fd); }
 	}
-
+	if(fan_count > 2)
+	{
+		fd = open(fan3_man, O_WRONLY);
+		if(fd >= 0) { write(fd, buf, strlen(buf)); close(fd); }
+	}
 	fflush(stdout);
 }
 
@@ -384,7 +383,16 @@ void scan_sensors()
 	else
 	{
 		fan_count = 2;
-		printf("Found 2 fans.\n");
+		result = stat(fan3_min, &buf);
+		if(result != 0)
+		{
+			printf("Found 2 fans.\n");
+		}
+		else
+		{
+			fan_count = 3;
+			printf("Found 3 fans.\n");
+		}
 	}
 
 	// count number of sensors
