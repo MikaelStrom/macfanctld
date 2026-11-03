@@ -180,6 +180,8 @@ int main(int argc, char *argv[])
 		sleep(5);
 	}
 
+	restore_fans();	// return fans to SMC automatic control
+
 	// close pid file and delete it
 
 	if(lock_fd != -1)
